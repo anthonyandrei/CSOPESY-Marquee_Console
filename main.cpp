@@ -17,6 +17,7 @@ int main() {
 
     while (isRunning) {
         std::cout<<"Command>";
+        //TODO: tokenize input
         std::cin>>command;
 
         if (command == "help") {
