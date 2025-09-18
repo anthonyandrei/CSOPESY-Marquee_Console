@@ -3,14 +3,15 @@
 
 int main() {
     std::string command;
-    
-    std::cout<<"Welcome to CSOPESY!\nGroup Developer:\nVersion Date:"<<std::endl;
+    bool isRunning = true;
+
+    std::cout<<"Welcome to CSOPESY!\n\nGroup Developer:\nVersion Date:\n"<<std::endl;
     
     //create marquee logic thread
     //create display thread
     //create keyboard handler thread
 
-    while (true) {
+    while (isRunning) {
         std::cout<<"Command>";
         std::cin>>command;
         if (command == "help") {
@@ -25,7 +26,7 @@ int main() {
             // set speed
         } else if (command == "exit") {
             std::cout << "Exiting program." << std::endl;
-            return 0;
+            isRunning = false;
         } else {
             std::cout<<"Command not found"<<std::endl;
         }
