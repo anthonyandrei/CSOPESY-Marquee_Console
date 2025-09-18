@@ -4,12 +4,12 @@
 int main() {
     std::string command;
     
-    std::cout<<"Welcome to CSOPESY!"<<std::endl;
-
-    std::cout<<"Group Developer:"<<std::endl;
-
-    std::cout<<"Version Date:"<<std::endl;
+    std::cout<<"Welcome to CSOPESY!\nGroup Developer:\nVersion Date:"<<std::endl;
     
+    //create marquee logic thread
+    //create display thread
+    //create keyboard handler thread
+
     while (true) {
         std::cout<<"Command>";
         std::cin>>command;
