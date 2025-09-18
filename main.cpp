@@ -1,14 +1,16 @@
 #include <iostream>
 #include <thread>
+#include <string>
+#include <mutex>
 #include "helper.h"
 
 int main() {
     std::string command;
     bool isRunning = true;
+    std::mutex mtx;
 
     std::cout<<"Welcome to CSOPESY!\n\nGroup Developer:\nVersion Date:\n"<<std::endl;
     
-    //TODO: create mutex
     //TODO: create marquee logic thread
     //TODO: create display thread
     //TODO: create keyboard handler thread
