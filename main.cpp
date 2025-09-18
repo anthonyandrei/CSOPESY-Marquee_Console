@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include "helper.h"
 
 int main() {
@@ -7,23 +8,25 @@ int main() {
 
     std::cout<<"Welcome to CSOPESY!\n\nGroup Developer:\nVersion Date:\n"<<std::endl;
     
-    //create marquee logic thread
-    //create display thread
-    //create keyboard handler thread
+    //TODO: create mutex
+    //TODO: create marquee logic thread
+    //TODO: create display thread
+    //TODO: create keyboard handler thread
 
     while (isRunning) {
         std::cout<<"Command>";
         std::cin>>command;
+
         if (command == "help") {
             showHelp();
         } else if (command == "start_marquee") {
-            // start marquee
+            // TODO: start marquee
         } else if (command == "stop_marquee") {
-            // stop marquee
+            // TODO: stop marquee
         } else if (command == "set_text") {
-            // set text
+            // TODO: set text
         } else if (command == "set_speed") {
-            // set speed
+            // TODO: set speed
         } else if (command == "exit") {
             std::cout << "Exiting program." << std::endl;
             isRunning = false;
