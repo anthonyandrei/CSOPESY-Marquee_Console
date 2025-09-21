@@ -2,7 +2,20 @@
 #include <thread>
 #include <string>
 #include <mutex>
-#include "helper.h"
+
+std::string marqueeText = "Hello World!";
+int speed = 200;
+
+void showHelp() {
+    std::cout <<
+        "Commands:\n"
+        "   help            Show this help\n"
+        "   start_marquee   Start marquee\n"
+        "   stop_marquee    Stop marquee\n"
+        "   set_text        Set marquee text\n"
+        "   set_speed       Set marquee speed\n"
+        "   exit            Exit program\n";
+}
 
 int main() {
     std::string command;
@@ -23,7 +36,7 @@ int main() {
         if (command == "help") {
             showHelp();
         } else if (command == "start_marquee") {
-            // TODO: start marquee
+            //TODO: start marquee
         } else if (command == "stop_marquee") {
             // TODO: stop marquee
         } else if (command == "set_text") {
