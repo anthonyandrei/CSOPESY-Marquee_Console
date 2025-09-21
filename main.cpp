@@ -2,12 +2,20 @@
 #include <thread>
 #include <string>
 #include <mutex>
+#include <chrono>
 
-std::string marqueeText = "Hello World!";
+using namespace std;
+
+string marqueeText = "Hello World!";
 int speed = 200;
+bool isRunning = true;
+bool marqueeActive = false;
+string command;
+string param;
+mutex mtx;
 
 void showHelp() {
-    std::cout <<
+    cout <<
         "Commands:\n"
         "   help            Show this help\n"
         "   start_marquee   Start marquee\n"
@@ -17,38 +25,70 @@ void showHelp() {
         "   exit            Exit program\n";
 }
 
-int main() {
-    std::string command;
-    bool isRunning = true;
-    std::mutex mtx;
-
-    std::cout<<"Welcome to CSOPESY!\n\nGroup Developer:\nVersion Date:\n"<<std::endl;
-    
-    //TODO: create marquee logic thread
-    //TODO: create display thread
-    //TODO: create keyboard handler thread
-
+void keyboardHandler() {
     while (isRunning) {
-        std::cout<<"Command>";
-        //TODO: tokenize input
-        std::cin>>command;
+
+        if (marqueeActive) {
+                cout << "\nCommand> ";
+        } else {
+            cout << "Command> ";
+        }
+
+        cin >> command;
 
         if (command == "help") {
+            lock_guard<mutex> lock(mtx);
             showHelp();
         } else if (command == "start_marquee") {
+            if (marqueeActive) {
+                cout << "Marquee already running!" << endl;
+                continue;
+            }
+            lock_guard<mutex> lock(mtx);
+            cout << "Starting marquee..." << endl;
             //TODO: start marquee
         } else if (command == "stop_marquee") {
+            if (!marqueeActive) {
+                cout << "Marquee not running!" << endl;
+                continue;
+            }
+            lock_guard<mutex> lock(mtx);
+            cout << "Stopping marquee..." << endl;
             // TODO: stop marquee
         } else if (command == "set_text") {
-            // TODO: set text
+            lock_guard<mutex> lock(mtx);
+            cout << "Enter new text: ";
+            cin.ignore();
+            getline(cin, param);
+            marqueeText = param;
+            cout << "Text successfully set to " << marqueeText << endl;
         } else if (command == "set_speed") {
-            // TODO: set speed
+            lock_guard<mutex> lock(mtx);
+            cout << "Enter new speed: ";
+            cin >> param;
+            int newSpeed = stoi(param);
+            speed = newSpeed;
+            cout << "Speed successfully set to " << speed << endl;
         } else if (command == "exit") {
-            std::cout << "Exiting program." << std::endl;
+            lock_guard<mutex> lock(mtx);
+            cout << "Exiting program." << endl;
             isRunning = false;
         } else {
-            std::cout<<"Command not found"<<std::endl;
+            lock_guard<mutex> lock(mtx);
+            cout << "Command not found" << endl;
         }
     }
+}
+
+int main() {
+    cout<<"Welcome to CSOPESY!\n\nGroup Developer:\nVersion Date:\n"<<endl;
+
+    //TODO: create marquee logic thread
+    //TODO: create display thread
+    thread kb_thread(keyboardHandler);
+
+    // Wait for keyboard thread to finish
+    kb_thread.join();
+
     return 0;
 }
