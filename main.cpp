@@ -62,6 +62,7 @@ void keyboardHandler() {
             getline(cin, param);
             marqueeText = param;
             cout << "Text successfully set to " << marqueeText << endl;
+            // might need to restart marquee here to avoid issues
         } else if (command == "set_speed") {
             lock_guard<mutex> lock(mtx);
             cout << "Enter new speed: ";
@@ -69,6 +70,7 @@ void keyboardHandler() {
             int newSpeed = stoi(param);
             speed = newSpeed;
             cout << "Speed successfully set to " << speed << endl;
+            // might need to restart marquee here to avoid issues
         } else if (command == "exit") {
             lock_guard<mutex> lock(mtx);
             cout << "Exiting program." << endl;
