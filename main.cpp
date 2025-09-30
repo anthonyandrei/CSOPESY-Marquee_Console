@@ -182,13 +182,13 @@ void displayHandler() {
             lock_guard<mutex> lock(mtx);
             output = toPrint;
         }
-        
+
         if (!output.empty()) {
             lock_guard<mutex> lock(mtx);
             cout << output << flush;
         }
         
-        this_thread::sleep_for(chrono::milliseconds(50));
+        this_thread::sleep_for(chrono::milliseconds(MAX_SPEED - speed));
     }
 }
 
