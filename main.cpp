@@ -10,6 +10,7 @@ string marqueeText = "Hello World!";
 int speed = 200;
 bool isRunning = true;
 bool marqueeActive = false;
+string line;
 string command;
 string param;
 mutex mtx;
@@ -17,12 +18,37 @@ mutex mtx;
 void showHelp() {
     cout <<
         "Commands:\n"
-        "   help            Show this help\n"
-        "   start_marquee   Start marquee\n"
-        "   stop_marquee    Stop marquee\n"
-        "   set_text        Set marquee text\n"
-        "   set_speed       Set marquee speed\n"
-        "   exit            Exit program\n";
+        "   help                  Show this help\n"
+        "   start_marquee         Start marquee\n"
+        "   stop_marquee          Stop marquee\n"
+        "   set_text <text>       Set marquee text\n"
+        "   set_speed <speed>     Set marquee speed\n"
+        "   exit                  Exit program\n";
+}
+void processLine() {
+    command.clear();
+    param.clear();
+
+    size_t start = line.find_first_not_of(" \t\r\n");
+    if (start == string::npos) 
+        return;
+
+    size_t sep = line.find_first_of(" ", start);
+    if (sep == string::npos) {
+        command = line.substr(start);
+        return;
+    }
+
+    command = line.substr(start, sep - start);
+    size_t pstart = line.find_first_not_of(" ", sep);
+    if (pstart != string::npos) {
+        param = line.substr(pstart);
+        size_t pend = param.find_last_not_of(" \t\r\n");
+        if (pend != string::npos)
+            param.erase(pend + 1);
+        else
+            param.clear();
+    }
 }
 
 void keyboardHandler() {
@@ -34,7 +60,10 @@ void keyboardHandler() {
             cout << "Command> ";
         }
 
-        cin >> command;
+        if (!getline(cin, line))
+            continue;
+
+        processLine();
 
         if (command == "help") {
             lock_guard<mutex> lock(mtx);
@@ -44,9 +73,9 @@ void keyboardHandler() {
                 cout << "Marquee already running!" << endl;
                 continue;
             }
+            marqueeActive = true;
             lock_guard<mutex> lock(mtx);
             cout << "Starting marquee..." << endl;
-            //TODO: start marquee
         } else if (command == "stop_marquee") {
             if (!marqueeActive) {
                 cout << "Marquee not running!" << endl;
@@ -54,26 +83,27 @@ void keyboardHandler() {
             }
             lock_guard<mutex> lock(mtx);
             cout << "Stopping marquee..." << endl;
-            // TODO: stop marquee
+            marqueeActive = false;
+            cout << "Marquee stopped." << endl;
         } else if (command == "set_text") {
             lock_guard<mutex> lock(mtx);
-            cout << "Enter new text: ";
-            cin.ignore();
-            getline(cin, param);
             marqueeText = param;
             cout << "Text successfully set to " << marqueeText << endl;
-            // might need to restart marquee here to avoid issues
         } else if (command == "set_speed") {
             lock_guard<mutex> lock(mtx);
-            cout << "Enter new speed: ";
-            cin >> param;
-            int newSpeed = stoi(param);
-            speed = newSpeed;
+            speed = stoi(param);
+
+            if (speed <= 0) {
+                cout << "Invalid speed. Must be a positive integer." << endl;
+                continue;
+            }
+
             cout << "Speed successfully set to " << speed << endl;
             // might need to restart marquee here to avoid issues
         } else if (command == "exit") {
             lock_guard<mutex> lock(mtx);
             cout << "Exiting program." << endl;
+            marqueeActive = false;
             isRunning = false;
         } else {
             lock_guard<mutex> lock(mtx);

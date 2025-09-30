@@ -1,0 +1,171 @@
+﻿CSOPESY Semi-Major Output	Created By: Gregory Cu By group
+
+Updated as of: Sept. 10, 2025
+General Instructions: An OS emulator needs a command interpreter and a display output.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Page 1 of 3
+Shell Reference
+Please refer to a general Linux/Windows powershell/Windows command line. This serves as a strong reference for the design of your command-line interface.
+
+Checklist of Requirements
+Your system must have ALL the following features implemented properly.
+
+Requirement	An “OS emulator” that accepts a command input with display output Description
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A main menu console that have the following features: 1.   Text marquee or ASCII graphics marquee
+2.   Acceot commands to change the behavior of the text marquee
+
+
+Requirement Description
+
+Command interpreter for the OS emulator that accepts the following commands From the main menu, the user can use the following commands:
+	“help” – displays the commands and its description
+
+
+	“start_marquee” – starts the marquee “animation”
+
+	“stop_marquee” – stops the marquee “animation”
+
+	“set_text” – accepts a text input and displays it as a marquee
+
+	“set_speed” – sets the marquee animation refresh in milliseconds
+
+	“exit” – terminates the console
+
+
+
+
+
+
+
+
+Page 2 of 3
+ASSESSMENT METHOD
+Your CLI emulator will be assessed through a black box quiz system in a time-pressure format. This is to minimize drastic changes or “hacking” your CLI to ensure the test cases are met. You should only modify the parameters and no longer recompile the CLI when taking the quiz.
+
+Test cases, parameters, and instructions are provided per question, wherein you must submit a video file (.MP4), demonstrating  your  CLI.  Some  questions  will  require  submitting  PowerPoint  presentations,  such  as  cases explaining the details of your implementation.
+
+IMPORTANT DATES
+See AnimoSpace for specific dates.
+
+Week 4	Test case demo submission
+
+
+Submission Details
+Aside from video files for the quiz, you need to prepare some of the requirements in advance, such as:
+o	SOURCE - Contains your source code. Add a README.txt with your name and instructions on running your program. Also, indicate the entry class file where the main function is located. An alternative can be a GitHub link.
+o	PPT – A technical report of your system containing: o	Command recognition
+o	Console UI implementation
+o	Command interpreter implementation o	Process representation
+o	Scheduler implementation
+
+Grading Scheme
+	You are to provide evidence for each test case, recorded through video. Each test case will have some points allocated. The test cases will be graded as follows:
+
+
+Functional No points
+The CLI did not pass the test case. NO WORKAROUND is available to produce the expected output.
+
+
+Partial points
+The CLI did not pass the test case. A workaround is available to produce the expected output.
+
+
+Full points
+The CLI passed the test case using varying inputs and produced the expected output.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Page 3 of 3
