@@ -33,19 +33,19 @@ void processLine() {
     if (start == string::npos) 
         return;
 
-    size_t sep = line.find_first_of(" ", start);
-    if (sep == string::npos) {
+    size_t space = line.find_first_of(" ", start);
+    if (space == string::npos) {
         command = line.substr(start);
         return;
     }
 
-    command = line.substr(start, sep - start);
-    size_t pstart = line.find_first_not_of(" ", sep);
-    if (pstart != string::npos) {
-        param = line.substr(pstart);
-        size_t pend = param.find_last_not_of(" \t\r\n");
-        if (pend != string::npos)
-            param.erase(pend + 1);
+    command = line.substr(start, space - start);
+    size_t param_start = line.find_first_not_of(" ", space);
+    if (param_start != string::npos) {
+        param = line.substr(param_start);
+        size_t param_end = param.find_last_not_of(" \t\r\n");
+        if (param_end != string::npos)
+            param.erase(param_end + 1);
         else
             param.clear();
     }
