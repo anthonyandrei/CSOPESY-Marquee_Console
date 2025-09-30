@@ -55,13 +55,20 @@ void keyboardHandler() {
     while (isRunning) {
 
         if (marqueeActive) {
-                cout << "\nCommand> ";
+            cout << "\nCommand> ";
         } else {
             cout << "Command> ";
         }
 
-        if (!getline(cin, line))
+        if (!getline(cin, line)) {
+            if (cin.eof()) {
+                cout << "\nEnd of input detected. Exiting program." << endl;
+                marqueeActive = false;
+                isRunning = false;
+                break;
+            }
             continue;
+        }
 
         processLine();
 
@@ -87,19 +94,30 @@ void keyboardHandler() {
             cout << "Marquee stopped." << endl;
         } else if (command == "set_text") {
             lock_guard<mutex> lock(mtx);
-            marqueeText = param;
-            cout << "Text successfully set to " << marqueeText << endl;
-        } else if (command == "set_speed") {
-            lock_guard<mutex> lock(mtx);
-            speed = stoi(param);
 
-            if (speed <= 0) {
-                cout << "Invalid speed. Must be a positive integer." << endl;
+            if (param.empty()) {
+                cout << "Missing parameter." << endl;
                 continue;
             }
 
-            cout << "Speed successfully set to " << speed << endl;
-            // might need to restart marquee here to avoid issues
+            marqueeText = param;
+            cout << "Text successfully set to " << marqueeText << endl;
+        } else if (command == "set_speed") {
+            try {
+                lock_guard<mutex> lock(mtx);
+                if (param.empty()) {
+                    cout << "Missing parameter." << endl;
+                    continue;
+                }
+                speed = stoi(param);
+                if (speed <= 0) {
+                    cout << "Invalid speed. Must be a positive integer." << endl;
+                    continue;
+                }
+                cout << "Speed successfully set to " << speed << endl;
+            } catch (exception& e) {
+                cout << "Error: " << e.what() << endl;
+            }
         } else if (command == "exit") {
             lock_guard<mutex> lock(mtx);
             cout << "Exiting program." << endl;
