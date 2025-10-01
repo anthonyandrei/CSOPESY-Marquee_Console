@@ -45,10 +45,12 @@ void printGreeting() {
 }
 
 void getConsoleSize() {
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    while(isRunning) {
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 
-    windowColumns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    windowRows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+        windowColumns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        windowRows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    }
 } 
 
 void showHelp() {
@@ -104,41 +106,29 @@ void keyboardHandler() {
                 processLine();
 
                 if (command == "help") {
-                    lock_guard<mutex> lock(mtx);
                     showHelp();
                 } else if (command == "start_marquee") {
                     if (marqueeActive) {
-                        lock_guard<mutex> lock(mtx);
                         cout << "Marquee already running!" << endl;
-                        continue;
                     }
                     marqueeActive = true;
-                    lock_guard<mutex> lock(mtx);
                     cout << "Starting marquee..." << endl;
                 } else if (command == "stop_marquee") {
                     if (!marqueeActive) {
-                        lock_guard<mutex> lock(mtx);
                         cout << "Marquee not running!" << endl;
-                        continue;
                     }
                     marqueeActive = false;
-                    lock_guard<mutex> lock(mtx);
                     cout << "Marquee stopped." << endl;
                 } else if (command == "set_text") {
                     if (param.empty()) {
-                        lock_guard<mutex> lock(mtx);
                         cout << "Missing parameter." << endl;
-                        continue;
                     }
                     marqueeText = param;
-                    lock_guard<mutex> lock(mtx);
                     cout << "Text successfully set to " << marqueeText << endl;
                 } else if (command == "set_speed") {
                     try {
                         if (param.empty()) {
-                            lock_guard<mutex> lock(mtx);
                             cout << "Missing parameter." << endl;
-                            continue;
                         }
                         //get first token before whitespace
                         size_t spacePos = param.find_first_of(" \t");
@@ -148,26 +138,19 @@ void keyboardHandler() {
                         int newSpeed = stoi(param);
                         int maxUserSpeed = MAX_SPEED - MIN_DELAY;
                         if (newSpeed < 1 || newSpeed > maxUserSpeed) {
-                            lock_guard<mutex> lock(mtx);
                             cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
-                            continue;
                         }
                         speed = newSpeed;
-                        lock_guard<mutex> lock(mtx);
                         cout << "Speed successfully set to " << speed << endl;
                     } catch (exception& e) {
-                        lock_guard<mutex> lock(mtx);
                         cout << "Error: " << e.what() << endl;
                     }
                 } else if (command == "exit") {
-                    {
-                        lock_guard<mutex> lock(mtx);
-                        cout << "Exiting program." << endl;
-                    }
+                    cout << "Exiting program." << endl;
+
                     marqueeActive = false;
                     isRunning = false;
                 } else if (!command.empty()) {
-                    lock_guard<mutex> lock(mtx);
                     cout << "Command not found" << endl;
                 }
 
@@ -239,14 +222,12 @@ void displayHandler() {
         if(marqueeActive) {
             system("cls");
             printGreeting();
-            string textToPrint;
-            {
-                lock_guard<mutex> lock(mtx);
-                textToPrint = toPrint;
-            }
+            string textToPrint = toPrint;
+
             if(!textToPrint.empty()) {
                 cout << textToPrint << endl;
             }
+            
             {
                 lock_guard<mutex> lock(mtx);
                 size_t curLen = inputBuffer.size();
@@ -259,6 +240,7 @@ void displayHandler() {
                 prevInputLen = curLen;
                 cout << flush;
             }
+
             Sleep(MAX_SPEED - speed);
         } else {
             {
@@ -279,7 +261,7 @@ void displayHandler() {
 
 int main() {
     printGreeting();
-    getConsoleSize();
+    thread get_console_size_thread(getConsoleSize);
 
     thread marquee_thread(marqueeLogicHandler);
     thread display_thread(displayHandler);
