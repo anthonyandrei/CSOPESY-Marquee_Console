@@ -38,7 +38,7 @@ void printGreeting() {
     cout << "Welcome to CSOPESY!\n" << endl;
     cout << "Group Developer: " << endl;
     cout << "Alonzo, John Leomarc" << endl;
-    cout << "Labarrete, Lance" << endl;
+    cout << "Labarrete, Lance Desmond" << endl;
     cout << "Soan, Brent Jan" << endl;
     cout << "Tan, Anthony Andrei\n" << endl;
     cout << "Version Date: 10/01/2025\n" << endl;
