@@ -7,9 +7,10 @@
 
 using namespace std;
 
-const int MAX_SPEED = 950;
+const int MAX_SPEED = 500;          // upper bound used in delay formula
 const int DEFAULT_SPEED = 250;
 const int INACTIVE_SLEEP = 100;
+const int MIN_DELAY = 20;           // minimum allowed delay (ms) to avoid 0 / busy loop
 
 string marqueeText = "Hello World!";
 int speed = DEFAULT_SPEED;
@@ -139,9 +140,10 @@ void keyboardHandler() {
                     continue;
                 }
                 int newSpeed = stoi(param);
-                if (newSpeed <= 0 || newSpeed > MAX_SPEED) {
+                int maxUserSpeed = MAX_SPEED - MIN_DELAY; // ensure delay >= MIN_DELAY
+                if (newSpeed < 1 || newSpeed > maxUserSpeed) {
                     lock_guard<mutex> lock(mtx);
-                    cout << "Invalid speed. Must be between 1 and " << MAX_SPEED << endl;
+                    cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
                     continue;
                 }
                 speed = newSpeed;
