@@ -110,46 +110,51 @@ void keyboardHandler() {
                     if (marqueeActive) {
                         lock_guard<mutex> lock(mtx);
                         cout << "Marquee already running!" << endl;
-                    } else {
-                        marqueeActive = true;
-                        lock_guard<mutex> lock(mtx);
-                        cout << "Starting marquee..." << endl;
+                        continue;
                     }
+                    marqueeActive = true;
+                    lock_guard<mutex> lock(mtx);
+                    cout << "Starting marquee..." << endl;
                 } else if (command == "stop_marquee") {
                     if (!marqueeActive) {
                         lock_guard<mutex> lock(mtx);
                         cout << "Marquee not running!" << endl;
-                    } else {
-                        marqueeActive = false;
-                        lock_guard<mutex> lock(mtx);
-                        cout << "Marquee stopped." << endl;
+                        continue;
                     }
+                    marqueeActive = false;
+                    lock_guard<mutex> lock(mtx);
+                    cout << "Marquee stopped." << endl;
                 } else if (command == "set_text") {
                     if (param.empty()) {
                         lock_guard<mutex> lock(mtx);
                         cout << "Missing parameter." << endl;
-                    } else {
-                        marqueeText = param;
-                        lock_guard<mutex> lock(mtx);
-                        cout << "Text successfully set to " << marqueeText << endl;
+                        continue;
                     }
+                    marqueeText = param;
+                    lock_guard<mutex> lock(mtx);
+                    cout << "Text successfully set to " << marqueeText << endl;
                 } else if (command == "set_speed") {
                     try {
                         if (param.empty()) {
                             lock_guard<mutex> lock(mtx);
                             cout << "Missing parameter." << endl;
-                        } else {
-                            int newSpeed = stoi(param);
-                            int maxUserSpeed = MAX_SPEED - MIN_DELAY;
-                            if (newSpeed < 1 || newSpeed > maxUserSpeed) {
-                                lock_guard<mutex> lock(mtx);
-                                cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
-                            } else {
-                                speed = newSpeed;
-                                lock_guard<mutex> lock(mtx);
-                                cout << "Speed successfully set to " << speed << endl;
-                            }
+                            continue;
                         }
+                        //get first token before whitespace
+                        size_t spacePos = param.find_first_of(" \t");
+                        if (spacePos != string::npos) {
+                            param = param.substr(0, spacePos);
+                        }
+                        int newSpeed = stoi(param);
+                        int maxUserSpeed = MAX_SPEED - MIN_DELAY;
+                        if (newSpeed < 1 || newSpeed > maxUserSpeed) {
+                            lock_guard<mutex> lock(mtx);
+                            cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
+                            continue;
+                        }
+                        speed = newSpeed;
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Speed successfully set to " << speed << endl;
                     } catch (exception& e) {
                         lock_guard<mutex> lock(mtx);
                         cout << "Error: " << e.what() << endl;
@@ -254,7 +259,7 @@ void displayHandler() {
                 prevInputLen = curLen;
                 cout << flush;
             }
-            Sleep((MAX_SPEED - speed) / 8);
+            Sleep(MAX_SPEED - speed);
         } else {
             {
                 lock_guard<mutex> lock(mtx);
