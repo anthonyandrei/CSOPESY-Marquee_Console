@@ -195,8 +195,10 @@ void displayHandler() {
 int main() {
     cout << "Welcome to CSOPESY!\n" << endl;
     cout << "Group Developer: " << endl;
+    cout << "Alonzo, John Leomarc" << endl;
+    cout << "Labarrete, Lance" << endl;
+    cout << "Soan, Brent Jan" << endl;
     cout << "Tan, Anthony Andrei" << endl;
-    // TODO: add your name here
     cout << "Version Date: 9/30/2025" << endl;
 
     thread marquee_thread(marqueeLogicHandler);
