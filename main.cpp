@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const int MAX_SPEED = 500;          // upper bound used in delay formula
+const int MAX_SPEED = 2000;          // upper bound used in delay formula
 const int DEFAULT_SPEED = 250;
 const int INACTIVE_SLEEP = 100;
 const int MIN_DELAY = 20;           // minimum allowed delay (ms) to avoid 0 / busy loop
@@ -137,10 +137,17 @@ void keyboardHandler() {
                         }
                         
                         int newSpeed = stoi(param);
-                        int maxUserSpeed = MAX_SPEED - MIN_DELAY;
+                        //int maxUserSpeed = MAX_SPEED - MIN_DELAY;
 
-                        if (newSpeed < 1 || newSpeed > maxUserSpeed) {
-                            cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
+                        // if (newSpeed < 1 || newSpeed > maxUserSpeed) {
+                        //     cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
+                        // } else {
+                        //     speed = newSpeed;
+                        //     cout << "Speed successfully set to " << speed << endl;
+                        // }
+
+                        if (newSpeed < 1 || newSpeed > MAX_SPEED) {
+                            cout << "Invalid speed. Must be between 1 and " << MAX_SPEED << endl;
                         } else {
                             speed = newSpeed;
                             cout << "Speed successfully set to " << speed << endl;
@@ -205,10 +212,11 @@ void marqueeLogicHandler() {
                     }
                 }
 
-                Sleep(MAX_SPEED - speed);
+                //Sleep(MAX_SPEED - speed);
+                Sleep(speed);
                 
                 // Break if text changed during animation
-                if(currentText != marqueeText) {
+                if(currentText != marqueeText && !isRunning) {
                     break;
                 }
             }
@@ -244,7 +252,8 @@ void displayHandler() {
                 cout << flush;
             }
 
-            Sleep(MAX_SPEED - speed);
+            //Sleep(MAX_SPEED - speed);
+            Sleep(speed);
         } else {
             {
                 lock_guard<mutex> lock(mtx);
@@ -271,6 +280,7 @@ int main() {
     thread kb_thread(keyboardHandler);
 
     // Wait for keyboard thread to finish
+    get_console_size_thread.join();
     kb_thread.join();
     marquee_thread.join();
     display_thread.join();
