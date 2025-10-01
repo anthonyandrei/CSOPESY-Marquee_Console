@@ -4,6 +4,7 @@
 #include <mutex>
 #include <chrono>
 #include <windows.h>
+#include <conio.h>   // added
 
 using namespace std;
 
@@ -25,6 +26,8 @@ mutex mtx;
 int windowColumns;
 int windowRows;
 CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+string inputBuffer;        // added: live typed characters
 
 void promptCommand() {
     cout << "Command> ";
@@ -86,82 +89,89 @@ void processLine() {
 
 void keyboardHandler() {
     while (isRunning) {
+        if (_kbhit()) {
+            int ch = _getch();
 
-        promptCommand();
-
-        if (!getline(cin, line)) {
-            if (cin.eof()) {
-                lock_guard<mutex> lock(mtx);
-                cout << "\nEnd of input detected. Exiting program." << endl;
-                marqueeActive = false;
-                isRunning = false;
-                break;
-            }
-            continue;
-        }
-
-        processLine();
-
-        if (command == "help") {
-            lock_guard<mutex> lock(mtx);
-            showHelp();
-        } else if (command == "start_marquee") {
-            if (marqueeActive) {
-                lock_guard<mutex> lock(mtx);
-                cout << "Marquee already running!" << endl;
-                continue;
-            }
-            marqueeActive = true;
-            lock_guard<mutex> lock(mtx);
-            cout << "Starting marquee..." << endl;
-        } else if (command == "stop_marquee") {
-            if (!marqueeActive) {
-                lock_guard<mutex> lock(mtx);
-                cout << "Marquee not running!" << endl;
-                continue;
-            }
-            marqueeActive = false;
-            lock_guard<mutex> lock(mtx);
-            cout << "\r" << string(50, ' ') << "\rMarquee stopped." << endl;
-        } else if (command == "set_text") {
-            if (param.empty()) {
-                lock_guard<mutex> lock(mtx);
-                cout << "Missing parameter." << endl;
-                continue;
-            }
-            marqueeText = param;
-            lock_guard<mutex> lock(mtx);
-            cout << "Text successfully set to " << marqueeText << endl;
-        } else if (command == "set_speed") {
-            try {
-                if (param.empty()) {
+            if (ch == 13) { // Enter
+                {
                     lock_guard<mutex> lock(mtx);
-                    cout << "Missing parameter." << endl;
-                    continue;
+                    cout << "\n"; // move to next line before command output
                 }
-                int newSpeed = stoi(param);
-                int maxUserSpeed = MAX_SPEED - MIN_DELAY; // ensure delay >= MIN_DELAY
-                if (newSpeed < 1 || newSpeed > maxUserSpeed) {
+                line = inputBuffer;
+                inputBuffer.clear();
+                processLine();
+
+                if (command == "help") {
                     lock_guard<mutex> lock(mtx);
-                    cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
-                    continue;
+                    showHelp();
+                } else if (command == "start_marquee") {
+                    if (marqueeActive) {
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Marquee already running!" << endl;
+                    } else {
+                        marqueeActive = true;
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Starting marquee..." << endl;
+                    }
+                } else if (command == "stop_marquee") {
+                    if (!marqueeActive) {
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Marquee not running!" << endl;
+                    } else {
+                        marqueeActive = false;
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Marquee stopped." << endl;
+                    }
+                } else if (command == "set_text") {
+                    if (param.empty()) {
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Missing parameter." << endl;
+                    } else {
+                        marqueeText = param;
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Text successfully set to " << marqueeText << endl;
+                    }
+                } else if (command == "set_speed") {
+                    try {
+                        if (param.empty()) {
+                            lock_guard<mutex> lock(mtx);
+                            cout << "Missing parameter." << endl;
+                        } else {
+                            int newSpeed = stoi(param);
+                            int maxUserSpeed = MAX_SPEED - MIN_DELAY;
+                            if (newSpeed < 1 || newSpeed > maxUserSpeed) {
+                                lock_guard<mutex> lock(mtx);
+                                cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
+                            } else {
+                                speed = newSpeed;
+                                lock_guard<mutex> lock(mtx);
+                                cout << "Speed successfully set to " << speed << endl;
+                            }
+                        }
+                    } catch (exception& e) {
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Error: " << e.what() << endl;
+                    }
+                } else if (command == "exit") {
+                    {
+                        lock_guard<mutex> lock(mtx);
+                        cout << "Exiting program." << endl;
+                    }
+                    marqueeActive = false;
+                    isRunning = false;
+                } else if (!command.empty()) {
+                    lock_guard<mutex> lock(mtx);
+                    cout << "Command not found" << endl;
                 }
-                speed = newSpeed;
-                lock_guard<mutex> lock(mtx);
-                cout << "Speed successfully set to " << speed << endl;
-            } catch (exception& e) {
-                lock_guard<mutex> lock(mtx);
-                cout << "Error: " << e.what() << endl;
+
+            } else if (ch == 8) { // Backspace
+                if (!inputBuffer.empty())
+                    inputBuffer.pop_back();
+            } else if (isprint(ch)) {
+                inputBuffer.push_back(static_cast<char>(ch));
             }
-        } else if (command == "exit") {
-            lock_guard<mutex> lock(mtx);
-            cout << "Exiting program." << endl;
-            marqueeActive = false;
-            isRunning = false;
-        } else if (!command.empty()) {
-            lock_guard<mutex> lock(mtx);
-            cout << "Command not found" << endl;
         }
+        Sleep(10);
     }
 }
 
@@ -227,8 +237,17 @@ void displayHandler() {
             if(!textToPrint.empty()) {
                 cout << textToPrint << endl;
             }
-            Sleep(MAX_SPEED - speed);
+            {
+                lock_guard<mutex> lock(mtx);
+                cout << "\nCommand> " << inputBuffer << flush;
+            }
+            Sleep((MAX_SPEED - speed) / 8);
         } else {
+            {
+                lock_guard<mutex> lock(mtx);
+                // Light refresh of prompt in idle mode
+                cout << "\rCommand> " << inputBuffer << flush;
+            }
             Sleep(INACTIVE_SLEEP);
         }
     }
