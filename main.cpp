@@ -27,7 +27,8 @@ int windowColumns;
 int windowRows;
 CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-string inputBuffer;        // added: live typed characters
+string inputBuffer;        // live typed characters
+size_t prevInputLen = 0;   // track previous rendered input length
 
 void promptCommand() {
     cout << "Command> ";
@@ -95,10 +96,11 @@ void keyboardHandler() {
             if (ch == 13) { // Enter
                 {
                     lock_guard<mutex> lock(mtx);
-                    cout << "\n"; // move to next line before command output
+                    cout << "\n";
+                    line = inputBuffer;
+                    inputBuffer.clear();
+                    prevInputLen = 0; // reset so prompt redraws clean
                 }
-                line = inputBuffer;
-                inputBuffer.clear();
                 processLine();
 
                 if (command == "help") {
@@ -165,9 +167,12 @@ void keyboardHandler() {
                 }
 
             } else if (ch == 8) { // Backspace
-                if (!inputBuffer.empty())
+                lock_guard<mutex> lock(mtx);
+                if (!inputBuffer.empty()) {
                     inputBuffer.pop_back();
+                }
             } else if (isprint(ch)) {
+                lock_guard<mutex> lock(mtx);
                 inputBuffer.push_back(static_cast<char>(ch));
             }
         }
@@ -239,14 +244,28 @@ void displayHandler() {
             }
             {
                 lock_guard<mutex> lock(mtx);
-                cout << "\nCommand> " << inputBuffer << flush;
+                size_t curLen = inputBuffer.size();
+                cout << "\nCommand> " << inputBuffer;
+                if (curLen < prevInputLen) {
+                    cout << string(prevInputLen - curLen, ' '); // clear leftovers
+                    // cursor is already after spaces; reposition to end of current buffer:
+                    cout << "\r" << "Command> " << inputBuffer;
+                }
+                prevInputLen = curLen;
+                cout << flush;
             }
             Sleep((MAX_SPEED - speed) / 8);
         } else {
             {
                 lock_guard<mutex> lock(mtx);
-                // Light refresh of prompt in idle mode
-                cout << "\rCommand> " << inputBuffer << flush;
+                size_t curLen = inputBuffer.size();
+                cout << "\rCommand> " << inputBuffer;
+                if (curLen < prevInputLen) {
+                    cout << string(prevInputLen - curLen, ' ');
+                    cout << "\rCommand> " << inputBuffer;
+                }
+                prevInputLen = curLen;
+                cout << flush;
             }
             Sleep(INACTIVE_SLEEP);
         }
