@@ -4,7 +4,7 @@
 #include <mutex>
 #include <chrono>
 #include <windows.h>
-#include <conio.h>   // added
+#include <conio.h>
 
 using namespace std;
 
@@ -135,13 +135,16 @@ void keyboardHandler() {
                         if (spacePos != string::npos) {
                             param = param.substr(0, spacePos);
                         }
+                        
                         int newSpeed = stoi(param);
                         int maxUserSpeed = MAX_SPEED - MIN_DELAY;
+
                         if (newSpeed < 1 || newSpeed > maxUserSpeed) {
                             cout << "Invalid speed. Must be between 1 and " << maxUserSpeed << endl;
+                        } else {
+                            speed = newSpeed;
+                            cout << "Speed successfully set to " << speed << endl;
                         }
-                        speed = newSpeed;
-                        cout << "Speed successfully set to " << speed << endl;
                     } catch (exception& e) {
                         cout << "Error: " << e.what() << endl;
                     }
@@ -176,7 +179,7 @@ void marqueeLogicHandler() {
             string currentText = marqueeText; // Snapshot the text
             int marqueeTextLen = static_cast<int>(currentText.length());
 
-            for(int i = windowColumns; i > 0 - marqueeTextLen && isRunning && marqueeActive; i--) {
+            for(int i = windowColumns; i > 0 - marqueeTextLen; i--) {
                 {
                     lock_guard<mutex> lock(mtx);
                     toPrint = "";
