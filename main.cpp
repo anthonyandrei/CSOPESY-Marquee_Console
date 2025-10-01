@@ -3,13 +3,16 @@
 #include <string>
 #include <mutex>
 #include <chrono>
+#include <windows.h>
 
 using namespace std;
 
-const int MAX_SPEED = 1000;
+const int MAX_SPEED = 950;
+const int DEFAULT_SPEED = 250;
+const int INACTIVE_SLEEP = 100;
 
 string marqueeText = "Hello World!";
-int speed = 200;
+int speed = DEFAULT_SPEED;
 bool isRunning = true;
 bool marqueeActive = false;
 string line;
@@ -17,6 +20,31 @@ string command;
 string param;
 string toPrint;
 mutex mtx;
+
+int windowColumns;
+int windowRows;
+CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+void promptCommand() {
+    cout << "Command> ";
+}
+
+void printGreeting() {
+    cout << "Welcome to CSOPESY!\n" << endl;
+    cout << "Group Developer: " << endl;
+    cout << "Alonzo, John Leomarc" << endl;
+    cout << "Labarrete, Lance" << endl;
+    cout << "Soan, Brent Jan" << endl;
+    cout << "Tan, Anthony Andrei\n" << endl;
+    cout << "Version Date: 10/01/2025\n" << endl;
+}
+
+void getConsoleSize() {
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+
+    windowColumns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    windowRows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+} 
 
 void showHelp() {
     cout <<
@@ -57,7 +85,8 @@ void processLine() {
 
 void keyboardHandler() {
     while (isRunning) {
-        cout << "Command> ";
+
+        promptCommand();
 
         if (!getline(cin, line)) {
             if (cin.eof()) {
@@ -136,66 +165,76 @@ void keyboardHandler() {
 
 // Marquee Logic: Calculates what to display
 void marqueeLogicHandler() {
-    int position = 0;
-    const int displayWidth = 40;
-    
-    while (isRunning) {
-        if (marqueeActive) {
-            string text = marqueeText;
-            string display(displayWidth, ' ');
-            
-            // Create scrolling animation
-            int textLen = text.length();
-            if (textLen > 0) {
-                for (int i = 0; i < displayWidth; i++) {
-                    int textIndex = (position + i) % textLen;
-                    display[i] = text[textIndex];
+    while(isRunning) {
+        if(marqueeActive) {
+            int j = 0;
+            string currentText = marqueeText; // Snapshot the text
+            int marqueeTextLen = static_cast<int>(currentText.length());
+
+            for(int i = windowColumns; i > 0 - marqueeTextLen && isRunning && marqueeActive; i--) {
+                {
+                    lock_guard<mutex> lock(mtx);
+                    toPrint = "";
+
+                    for(int k = i; k > 0; k--) {
+                        toPrint.push_back(' ');
+                    }
+
+                    if(i > windowColumns - marqueeTextLen) {
+                        toPrint += currentText.substr(0, j);
+                        j++;
+                    }
+                    else if(i >= 0) {
+                        toPrint += currentText;
+                    }
+                    else if(i < 0) {
+                        toPrint += currentText.substr(j, marqueeTextLen - j);
+                        j++;
+                    }
+
+                    if(i == 0) {
+                        j = 0;
+                    }
+                }
+
+                Sleep(MAX_SPEED - speed);
+                
+                // Break if text changed during animation
+                if(currentText != marqueeText) {
+                    break;
                 }
             }
-            
-            // Pass formatted text to display handler
-            {
-                lock_guard<mutex> lock(mtx);
-                toPrint = "\rMarquee: " + display;
-            }
-            
-            position = (position + 1) % (textLen + displayWidth);
-        } else {
-            // Clear toPrint when marquee is inactive
-            lock_guard<mutex> lock(mtx);
-            toPrint.clear();
         }
-        
-        this_thread::sleep_for(chrono::milliseconds(MAX_SPEED - speed));
+        else {
+            Sleep(INACTIVE_SLEEP);
+        }
     }
 }
 
 // Display Handler: Handles actual console output
 void displayHandler() {
-    while (isRunning) {
-        string output;
-        {
-            lock_guard<mutex> lock(mtx);
-            output = toPrint;
+    while(isRunning) {
+        if(marqueeActive) {
+            system("cls");
+            printGreeting();
+            string textToPrint;
+            {
+                lock_guard<mutex> lock(mtx);
+                textToPrint = toPrint;
+            }
+            if(!textToPrint.empty()) {
+                cout << textToPrint << endl;
+            }
+            Sleep(MAX_SPEED - speed);
+        } else {
+            Sleep(INACTIVE_SLEEP);
         }
-
-        if (!output.empty()) {
-            lock_guard<mutex> lock(mtx);
-            cout << output << flush;
-        }
-        
-        this_thread::sleep_for(chrono::milliseconds(MAX_SPEED - speed));
     }
 }
 
 int main() {
-    cout << "Welcome to CSOPESY!\n" << endl;
-    cout << "Group Developer: " << endl;
-    cout << "Alonzo, John Leomarc" << endl;
-    cout << "Labarrete, Lance" << endl;
-    cout << "Soan, Brent Jan" << endl;
-    cout << "Tan, Anthony Andrei\n" << endl;
-    cout << "Version Date: 10/01/2025\n" << endl;
+    printGreeting();
+    getConsoleSize();
 
     thread marquee_thread(marqueeLogicHandler);
     thread display_thread(displayHandler);
