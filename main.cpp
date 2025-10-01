@@ -57,11 +57,7 @@ void processLine() {
 
 void keyboardHandler() {
     while (isRunning) {
-        if (marqueeActive) {
-            cout << "\nCommand> ";
-        } else {
-            cout << "Command> ";
-        }
+        cout << "Command> ";
 
         if (!getline(cin, line)) {
             if (cin.eof()) {
