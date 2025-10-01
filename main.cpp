@@ -194,8 +194,8 @@ int main() {
     cout << "Alonzo, John Leomarc" << endl;
     cout << "Labarrete, Lance" << endl;
     cout << "Soan, Brent Jan" << endl;
-    cout << "Tan, Anthony Andrei" << endl;
-    cout << "Version Date: 9/30/2025" << endl;
+    cout << "Tan, Anthony Andrei\n" << endl;
+    cout << "Version Date: 10/01/2025\n" << endl;
 
     thread marquee_thread(marqueeLogicHandler);
     thread display_thread(displayHandler);
